@@ -12,7 +12,6 @@
 
 #define SENSOR true
 
-#define frameDelay 0
 #define edaFrequency 2 // in Hertz
 #define ecgThreshold 50
 
@@ -20,7 +19,7 @@ SoftwareSerial BTserial(RXPin, TXPin);
  
 const long baudRate = 9600; // baudRate to change Settings in the Bluetooth Module = 38400
 
-int lastEDA = 0;
+//int lastEDA = 0;
 int currentEDA = 0;
 int currentECG;
 
@@ -28,6 +27,7 @@ int currentStep = 0;
 
 Reader reader;
 Time time;
+long last = 0;
  
 void setup() {
     Serial.begin(9600);
@@ -35,40 +35,31 @@ void setup() {
 }
 
 void loop() {
-  checkSerial();
-  checkBluetooth();
-  
-  if (!SENSOR) {return;}
-
-  time.update();
-  
   String out = (String) millis();
-  currentStep += time.deltaTime;
 
   // meassure skin conductivity n time per second
-  if (currentStep >= (1000 / edaFrequency)) {
-    currentStep -= (1000 / edaFrequency);
-    lastEDA = currentEDA;
+  if ((millis() - last) >= (1000 / edaFrequency)) {
+    last = millis();
+    //lastEDA = currentEDA;
     currentEDA = reader.getEdaData();
   } else {
     // get ecg data
     int ecg = reader.getEcgData();
+    //BTserial.print("ecg: " + String(ecg) + "\n");
 
-    if (ecg > ecgThreshold) {
+    //if (ecg > ecgThreshold) {
       currentECG = ecg;
-    }
+    //}
   }
   
   // lerp eda data to account for the meassurement frequency
-  int edaData = floor(lastEDA + (currentStep / (1000.0f / edaFrequency) * (currentEDA - lastEDA)));
-  
-  out += " " + String(edaData) + " " + String(currentECG) + " " + String(time.deltaTime) + ";";
+  //int edaData = floor(lastEDA + (currentStep / (1000.0f / edaFrequency) * (currentEDA - lastEDA)));
+
+  out += " " + String(currentEDA) + " " + String(currentECG);
   
   // send out data
-  Serial.print(out + "\n");
+  //Serial.print(out + "\n");
   BTserial.print(out + "\n");
-
-  delay(frameDelay);
 }
 
 // Read from the Serial Monitor and send to the Bluetooth module

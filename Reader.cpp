@@ -21,24 +21,17 @@ Reader::~Reader() {}
 
 int Reader::getEdaData() {
   digitalWrite(EDA_PlusPin, HIGH);
-  delay(10);
+  delay(1);
 
   int value = analogRead(A0);
 
   digitalWrite(EDA_PlusPin, LOW);
 
-  delay(10);
+  delay(1);
   
   return value;
 }
 
 int Reader::getEcgData() {
-  if ((digitalRead(LO_PlusPin) == 1) || (digitalRead(LO_MinusPin) == 1)) {
-    Serial.println('!');
-    //BTserial.println('!');
-    //delay(100);
-    return -1;
-  } else {
-    return analogRead(A1);
-  }
+  return ((digitalRead(LO_PlusPin) == 1) || (digitalRead(LO_MinusPin) == 1)) ? -1 : analogRead(A1);
 }
